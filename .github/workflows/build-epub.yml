@@ -1,0 +1,33 @@
+name: Build EPUB from HTML
+
+on:
+  workflow_dispatch:
+    inputs:
+      book_title:
+        description: "Book Title"
+        required: true
+      html_url:
+        description: "Public URL of full HTML"
+        required: true
+
+jobs:
+  build-epub:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc curl
+
+      - name: Download HTML from URL
+        run: |
+          curl -L "${{ github.event.inputs.html_url }}" -o book.html
+
+      - name: Build EPUB
+        run: |
+          pandoc book.html -o "${{ github.event.inputs.book_title }}.epub"
+
+      - name: Upload EPUB as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: epub-output
+          path: ${{ github.event.inputs.book_title }}.epub
